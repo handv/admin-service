@@ -1,30 +1,29 @@
-const { Op } = require('sequelize')
+const {Op} = require('sequelize')
 
-const { Article } = require('@models/article')
-const { Category } = require('@models/category')
-const { Comment } = require('@models/comment')
-const { Admin } = require('@models/admin')
+const {Article} = require('@models/article')
+const {Category} = require('@models/category')
+const {Comment} = require('@models/comment')
+const {Admin} = require('@models/admin')
 const {Message} = require('@models/message')
 
-const { isArray, unique } = require('@lib/utils')
+const {isArray, unique} = require('@lib/utils')
 
 // 定义信息模型
 class MessageDao {
-
   // 发布信息
-  static async create(v) {
-    const message = new Message();
+  static async create(v, user_id) {
+    const message = new Message()
 
     message.title = v.get('body.title')
-    message.md5 = v.get('body.md5');
-    message.ip = v.get('body.ip');
-    message.domain = v.get('body.domain');
+    message.md5 = v.get('body.md5')
+    message.ip = v.get('body.ip')
+    message.domain = v.get('body.domain')
     message.labels = v.get('body.labels')
     message.share_users = v.get('body.share_users')
-    message.user_id = v.get('body.user_id')
+    message.user_id = user_id
 
     try {
-      const res = await message.save();
+      const res = await message.save()
       return [null, res]
     } catch (err) {
       console.log(err)
@@ -35,14 +34,14 @@ class MessageDao {
   static async _handleAdmin(data, ids) {
     const finner = {
       where: {
-        id: {}
+        id: {},
       },
-      attributes: ['id', 'email', 'nickname']
+      attributes: ['id', 'email', 'nickname'],
     }
 
     if (isArray(ids)) {
       finner.where.id = {
-        [Op.in]: ids
+        [Op.in]: ids,
       }
     } else {
       finner.where.id = ids
@@ -52,11 +51,11 @@ class MessageDao {
       if (isArray(ids)) {
         const res = await Admin.findAll(finner)
         let admin = {}
-        res.forEach(item => {
+        res.forEach((item) => {
           admin[item.id] = item
         })
 
-        data.forEach(item => {
+        data.forEach((item) => {
           item.setDataValue('admin_info', admin[item.admin_id] || null)
         })
       } else {
@@ -72,13 +71,13 @@ class MessageDao {
   static async _handleCategory(data, ids) {
     const finner = {
       where: {
-        id: {}
+        id: {},
       },
-      attributes: ['id', 'name']
+      attributes: ['id', 'name'],
     }
     if (isArray(ids)) {
       finner.where.id = {
-        [Op.in]: ids
+        [Op.in]: ids,
       }
     } else {
       finner.where.id = ids
@@ -88,11 +87,11 @@ class MessageDao {
       if (isArray(ids)) {
         const res = await Category.findAll(finner)
         let category = {}
-        res.forEach(item => {
+        res.forEach((item) => {
           category[item.id] = item
         })
 
-        data.forEach(item => {
+        data.forEach((item) => {
           item.setDataValue('category_info', category[item.category_id] || null)
         })
       } else {
@@ -107,12 +106,12 @@ class MessageDao {
 
   // 获取文章列表
   static async list(params = {}) {
-    const { category_id, keyword, page_size = 10, status, page = 1 } = params;
+    const {category_id, keyword, page_size = 10, status, page = 1} = params
 
     // 筛选方式
     let filter = {
-      deleted_at: null
-    };
+      deleted_at: null,
+    }
 
     // 状态筛选，0-隐藏，1-正常
     if (status || status === 0) {
@@ -121,14 +120,14 @@ class MessageDao {
 
     // 筛选方式：存在分类ID
     if (category_id) {
-      filter.category_id = category_id;
+      filter.category_id = category_id
     }
 
     // 筛选方式：存在搜索关键字
     if (keyword) {
       filter.title = {
-        [Op.like]: `%${keyword}%`
-      };
+        [Op.like]: `%${keyword}%`,
+      }
     }
 
     try {
@@ -136,23 +135,27 @@ class MessageDao {
         limit: page_size, //每页10条
         offset: (page - 1) * page_size,
         where: filter,
-        order: [
-          ['created_at', 'DESC']
-        ]
-      });
+        order: [['created_at', 'DESC']],
+      })
 
       let rows = article.rows
 
       // 处理分类
-      const categoryIds = unique(rows.map(item => item.category_id))
-      const [categoryError, dataAndCategory] = await MessageDao._handleCategory(rows, categoryIds)
+      const categoryIds = unique(rows.map((item) => item.category_id))
+      const [categoryError, dataAndCategory] = await MessageDao._handleCategory(
+        rows,
+        categoryIds
+      )
       if (!categoryError) {
         rows = dataAndCategory
       }
 
       // 处理创建人
-      const adminIds = unique(rows.map(item => item.admin_id))
-      const [userError, dataAndAdmin] = await MessageDao._handleAdmin(rows, adminIds)
+      const adminIds = unique(rows.map((item) => item.admin_id))
+      const [userError, dataAndAdmin] = await MessageDao._handleAdmin(
+        rows,
+        adminIds
+      )
       if (!userError) {
         rows = dataAndAdmin
       }
@@ -170,7 +173,7 @@ class MessageDao {
           count: article.count,
           total: article.count,
           total_pages: Math.ceil(article.count / 10),
-        }
+        },
       }
 
       return [null, data]
@@ -185,20 +188,18 @@ class MessageDao {
     const article = await Article.findOne({
       where: {
         id,
-        deleted_at: null
-      }
-    });
+        deleted_at: null,
+      },
+    })
     // 不存在抛出错误
     if (!article) {
-      throw new global.errs.NotFound('没有找到相关文章');
-
+      throw new global.errs.NotFound('没有找到相关文章')
     }
 
     try {
       // 软删除文章
       const res = await article.destroy()
       return [null, res]
-
     } catch (err) {
       return [err, null]
     }
@@ -207,24 +208,24 @@ class MessageDao {
   // 更新文章
   static async update(id, v) {
     // 查询文章
-    const article = await Article.findByPk(id);
+    const article = await Article.findByPk(id)
     if (!article) {
-      throw new global.errs.NotFound('没有找到相关文章');
+      throw new global.errs.NotFound('没有找到相关文章')
     }
 
     // 更新文章
-    article.title = v.get('body.title');
-    article.description = v.get('body.description');
-    article.img_url = v.get('body.img_url');
-    article.content = v.get('body.content');
-    article.seo_keyword = v.get('body.seo_keyword');
-    article.status = v.get('body.status');
-    article.sort_order = v.get('body.sort_order');
-    article.admin_id = v.get('body.admin_id');
-    article.category_id = v.get('body.category_id');
+    article.title = v.get('body.title')
+    article.description = v.get('body.description')
+    article.img_url = v.get('body.img_url')
+    article.content = v.get('body.content')
+    article.seo_keyword = v.get('body.seo_keyword')
+    article.status = v.get('body.status')
+    article.sort_order = v.get('body.sort_order')
+    article.admin_id = v.get('body.admin_id')
+    article.category_id = v.get('body.category_id')
 
     try {
-      const res = await article.save();
+      const res = await article.save()
       return [null, res]
     } catch (err) {
       return [err, null]
@@ -234,15 +235,15 @@ class MessageDao {
   // 更新文章浏览次数
   static async updateBrowse(id, browse) {
     // 查询文章
-    const article = await Article.findByPk(id);
+    const article = await Article.findByPk(id)
     if (!article) {
-      throw new global.errs.NotFound('没有找到相关文章');
+      throw new global.errs.NotFound('没有找到相关文章')
     }
     // 更新文章浏览
-    article.browse = browse;
+    article.browse = browse
 
     try {
-      const res = await article.save();
+      const res = await article.save()
       return [null, res]
     } catch (err) {
       return [err, null]
@@ -251,54 +252,58 @@ class MessageDao {
 
   // 文章详情
   static async detail(id, query) {
-    const { keyword } = query
+    const {keyword} = query
     try {
       let filter = {
         id,
-        deleted_at: null
+        deleted_at: null,
       }
 
       let article = await Article.findOne({
         where: filter,
-      });
+      })
 
-      const [categoryError, dataAndCategory] = await MessageDao._handleCategory(article, article.category_id)
+      const [categoryError, dataAndCategory] = await MessageDao._handleCategory(
+        article,
+        article.category_id
+      )
       if (!categoryError) {
         article = dataAndCategory
       }
 
       // 处理创建人
-      const [userError, dataAndAdmin] = await MessageDao._handleAdmin(article, article.admin_id)
+      const [userError, dataAndAdmin] = await MessageDao._handleAdmin(
+        article,
+        article.admin_id
+      )
       if (!userError) {
         article = dataAndAdmin
       }
 
-
       if (!article) {
-        throw new global.errs.NotFound('没有找到相关文章');
+        throw new global.errs.NotFound('没有找到相关文章')
       }
 
       const comment = await Comment.findAndCountAll({
         where: {
           article_id: id,
           status: 1,
-          deleted_at: null
+          deleted_at: null,
         },
-        attributes: ['id']
+        attributes: ['id'],
       })
 
       if (comment) {
         article.setDataValue('comment_count', comment.count || 0)
       }
 
-      return [null, article];
+      return [null, article]
     } catch (err) {
       return [err, null]
     }
   }
-
 }
 
 module.exports = {
-  MessageDao
+  MessageDao,
 }

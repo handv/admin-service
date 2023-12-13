@@ -50,7 +50,6 @@ class UserDao {
           status: {[Op.ne]: 0},
         },
       })
-
       if (!user) {
         throw new global.errs.AuthFailed('账号不存在')
       }
@@ -134,8 +133,7 @@ class UserDao {
   }
 
   // 不等于query的列表数据
-  static async list(query = {}) {
-    const {id} = query
+  static async list(id) {
     const scop = 'bh'
     const filter = {}
     if (id) {
@@ -143,13 +141,11 @@ class UserDao {
     }
 
     try {
-      const user = await User.scope(scop).findAndCountAll({
+      const user = await User.scope(scop).findAll({
         where: filter,
-        order: [['created_at', 'DESC']],
         attributes: ['id', 'username'],
       })
-      const data = user.rows
-      return [null, data]
+      return [null, user]
     } catch (err) {
       console.log('err', err)
       return [err, null]

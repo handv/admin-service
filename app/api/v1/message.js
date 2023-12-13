@@ -21,7 +21,7 @@ const router = new Router({
 })
 
 /**
- * 创建文章
+ * 发布信息
  */
 router.post('/message', new Auth(AUTH_USER).m, async (ctx) => {
   // 通过验证器校验参数是否通过
@@ -29,8 +29,7 @@ router.post('/message', new Auth(AUTH_USER).m, async (ctx) => {
   // 更新labels
   const lables = v.get('body.labels')
   const [labelErr] = await LabelsDao.update(lables)
-  // 创建文章
-  const [err, data] = await MessageDao.create(v)
+  const [err, data] = await MessageDao.create(v, ctx.auth.uid)
   if (!err) {
     // 返回结果
     ctx.response.status = 200
@@ -81,7 +80,7 @@ router.put('/article/:id', new Auth(AUTH_USER).m, async (ctx) => {
 /**
  * 获取文章列表
  */
-router.get('/article', async (ctx) => {
+router.post('/message/list', async (ctx) => {
   // 尝试获文章取缓存
   const {category_id = 0, page = 1} = ctx.query
 
@@ -96,7 +95,7 @@ router.get('/article', async (ctx) => {
 })
 
 /**
- * 查询文章详情
+ * 查询分享给当前用户的
  */
 router.get('/article/:id', async (ctx) => {
   // 通过验证器校验参数是否通过
