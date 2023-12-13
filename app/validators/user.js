@@ -26,7 +26,7 @@ class RegisterValidator extends LinValidator {
     ]
     this.password2 = this.password
     this.username = [
-      new Rule('isLength', '昵称长度必须在2~16之间', {
+      new Rule('isLength', '用户名长度必须在2~16之间', {
         min: 2,
         max: 16
       }),
@@ -58,8 +58,11 @@ class RegisterValidator extends LinValidator {
 class UserLoginValidator extends LinValidator {
   constructor() {
     super();
-    this.email = [
-      new Rule('isEmail', '电子邮箱不符合规范，请输入正确的邮箱')
+    this.username = [
+      new Rule('isLength', '用户名长度必须在2~16之间', {
+        min: 2,
+        max: 16,
+      }),
     ]
     this.password = [
       // 用户密码指定范围

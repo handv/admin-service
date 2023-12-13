@@ -63,9 +63,9 @@ router.post('/login', async (ctx) => {
     const v = await new UserLoginValidator().validate(ctx);
 
     let [err, token, id] = await LoginManager.userLogin({
-        email: v.get('body.email'),
-        password: v.get('body.password')
-    });
+      username: v.get('body.username'),
+      password: v.get('body.password'),
+    })
 
     if (!err) {
         let [err, data] = await UserDao.detail(id);

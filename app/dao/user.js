@@ -41,13 +41,13 @@ class UserDao {
   }
 
   // 验证密码
-  static async verify(email, plainPassword) {
+  static async verify(username, plainPassword) {
     try {
       // 查询用户是否存在
       const user = await User.findOne({
         where: {
-          email,
-          status: 1,
+          username,
+          status: {[Op.ne]: 0},
         },
       })
 
@@ -146,7 +146,7 @@ class UserDao {
       const user = await User.scope(scop).findAndCountAll({
         where: filter,
         order: [['created_at', 'DESC']],
-        attributes: ['id', 'username']
+        attributes: ['id', 'username'],
       })
       const data = user.rows
       return [null, data]

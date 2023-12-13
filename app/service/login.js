@@ -19,9 +19,9 @@ class LoginManager {
 
   // 用户登录
   static async userLogin(params) {
-    const { email, password } = params
+    const { username, password } = params
     // 验证账号密码是否正确
-    const [err, user] = await UserDao.verify(email, password);
+    const [err, user] = await UserDao.verify(username, password);
     if (!err) {
       return [null, generateToken(user.id, Auth.USER), user.id]
     } else {
