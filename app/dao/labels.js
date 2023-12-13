@@ -5,13 +5,12 @@ class LabelsDao {
   // 获取标签详情
   static async detail() {
     try {
-      const labels = await Labels.findOne();      
+      const labels = await Labels.scope('bh').findOne()      
       if (!labels) {
         return [null, []]
       }
       const labelString = labels.labels;
-      labels.labels =
-        labelString.split('$*$').map((tag) => tag.replace(/"/g, '')) || []
+      labels.labels = JSON.parse(labelString) || []
       return [null, labels]
     } catch (err) {
       return [err, null]
@@ -20,27 +19,26 @@ class LabelsDao {
 
   // 更新标签
   static async update(data) {
-    let label_data = await Labels.findOne();
-    let set = new Set();
-    
-    if(label_data) {
-      set = new Set(label_data.split('$*$'));
-    }else {
-      label_data = new Labels();
-    }
-
-    // 是否有上传新标签
-    let change = false;
-    for(let item of data) {
-      if(!set.has(item)) {
-        set.add(item);
-        change = true;
-      }
-    }
     try {
+      let label_data = await Labels.findOne();
+      const set = new Set(JSON.parse(label_data ? label_data.labels : '[]'));
+      console.log(label_data, label_data ? typeof label_data.labels : 'ss', set)
+      
+      if(!label_data) {
+        label_data = new Labels();
+      }
+  
+      // 是否有上传新标签
+      let change = false;
+      for(let item of JSON.parse(data)) {
+        if(!set.has(item)) {
+          set.add(item);
+          change = true;
+        }
+      }
       // 如果有新标签，则保存
       if(change) {
-        label_data = [...set].join('$*$');
+        label_data.labels = JSON.stringify([...set]);
         const res = await label_data.save()
         return [null, res]
       }

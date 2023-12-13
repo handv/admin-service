@@ -20,7 +20,7 @@ Labels.init(
     labels: {
       type: DataTypes.TEXT,
       allowNull: false,
-      comment: '标签，以$*$区分',
+      comment: '标签，字符串数组',
     },
     created_at: {
       type: DataTypes.DATE,

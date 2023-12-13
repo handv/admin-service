@@ -12,37 +12,23 @@ const { Auth } = require('@middlewares/auth');
 const { Resolve } = require('@lib/helper');
 const res = new Resolve();
 
-const AUTH_ADMIN = 16;
+const AUTH_USER = 8;
 
 const router = new Router({
   prefix: '/api/v1'
 })
 
 /**
- * 更新分类
- */
-router.put('/labels', new Auth(AUTH_ADMIN).m, async (ctx) => {
-  // 更新分类
-  const [err, data] = await LabelsDao.update(v);
-  if (!err) {
-    ctx.response.status = 200;
-    ctx.body = res.success('更新分类成功');
-  } else {
-    ctx.body = res.fail(err);
-  }
-})
-
-/**
  * 获取所有的分类
  */
-router.get('/labels', async (ctx) => {
-  const [err, data] = await LabelsDao.detail(ctx.query);
+router.get('/labels', new Auth(AUTH_USER).m, async (ctx) => {
+  const [err, data] = await LabelsDao.detail(ctx.query)
   if (!err) {
     // 返回结果
-    ctx.response.status = 200;
-    ctx.body = res.json(data);
+    ctx.response.status = 200
+    ctx.body = res.json(data)
   } else {
-    ctx.body = res.fail(err);
+    ctx.body = res.fail(err)
   }
 })
 

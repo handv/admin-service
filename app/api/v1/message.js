@@ -1,9 +1,6 @@
 const Router = require('koa-router')
 
-const {
-  ArticleValidator,
-  PositiveIdParamsValidator,
-} = require('@validators/article')
+const {PositiveIdParamsValidator} = require('@validators/article')
 
 const {MessageValidator} = require('@validators/message')
 
@@ -11,35 +8,10 @@ const {Auth} = require('@middlewares/auth')
 const {ArticleDao} = require('@dao/article')
 const {CommentDao} = require('@dao/comment')
 const {MessageDao} = require('@dao/message')
+const {LabelsDao} = require('@dao/labels')
 
 const {Resolve} = require('@lib/helper')
 const res = new Resolve()
-
-const hljs = require('highlight.js')
-const md = require('markdown-it')({
-  highlight: function (str, lang) {
-    if (lang && hljs.getLanguage(lang)) {
-      try {
-        return (
-          '<pre class="hljs"><code>' +
-          // Deprecated as of 10.7.0. highlight(lang, code, ...args) has been deprecated.
-          // Deprecated as of 10.7.0. Please use highlight(code, options) instead.
-          // https://github.com/highlightjs/highlight.js/issues/2277
-          // hljs.highlight(lang, str, true).value + '</code></pre>';
-          hljs.highlight(str, {
-            language: lang,
-            ignoreIllegals: true,
-          }).value +
-          '</code></pre>'
-        )
-      } catch (__) {}
-    }
-
-    return (
-      '<pre class="hljs"><code>' + md.utils.escapeHtml(str) + '</code></pre>'
-    )
-  },
-})
 
 // todo：改到constants里
 const AUTH_USER = 8
@@ -54,7 +26,9 @@ const router = new Router({
 router.post('/message', new Auth(AUTH_USER).m, async (ctx) => {
   // 通过验证器校验参数是否通过
   const v = await new MessageValidator().validate(ctx)
-
+  // 更新labels
+  const lables = v.get('body.labels')
+  const [labelErr] = await LabelsDao.update(lables)
   // 创建文章
   const [err, data] = await MessageDao.create(v)
   if (!err) {
