@@ -6,7 +6,7 @@ test('测试管理员注册，按正确的发送参数，测试结果应该注�
   const res = await server.post('/api/v1/admin/register').send({
     nickname,
     email,
-    password1: password,
+    password: password,
     password2: password
   })
   expect(res.status).toBe(200)
@@ -17,7 +17,7 @@ test('测试管理员注册，输入不正确的邮箱进行注册，测试结�
   const res = await server.post('/api/v1/admin/register').send({
     nickname,
     email: `not a mail@m`,
-    password1: password,
+    password: password,
     password2: password
   })
   expect(res.status).toBe(400)
@@ -28,7 +28,7 @@ test('测试管理员注册，输入两次密码不正确，测试结果注册�
   const res = await server.post('/api/v1/admin/register').send({
     nickname,
     email,
-    password1: password,
+    password: password,
     password2: password + '1024'
   })
   expect(res.status).toBe(400)

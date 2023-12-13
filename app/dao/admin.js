@@ -3,7 +3,7 @@
  * @description Data Access Objects for Administrators
  * @author 梁凤波, Peter Liang
  */
-
+const {Op} = require('sequelize')
 const { Admin } = require('@models/admin')
 const bcrypt = require('bcryptjs')
 
@@ -87,6 +87,29 @@ class AdminDao {
 
       return [null, admin]
     } catch (err) {
+      return [err, null]
+    }
+  }
+
+  // 不等于query的列表数据
+  static async list(query = {}) {
+    const {id} = query
+    const scop = 'bh'
+    const filter = {}
+    if (id) {
+      filter.id = {[Op.ne]: id}
+    }
+
+    try {
+      const user = await Admin.scope(scop).findAndCountAll({
+        where: filter,
+        order: [['created_at', 'DESC']],
+        attributes: ['id', 'username'],
+      })
+      const data = user.rows
+      return [null, data]
+    } catch (err) {
+      console.log('err', err)
       return [err, null]
     }
   }

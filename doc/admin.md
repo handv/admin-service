@@ -14,7 +14,7 @@ POST    /admin/register
 ---|---|:---:
 nickname | 昵称 | 是
 email | 邮箱 | 是
-password1 | 密码 | 是
+password | 密码 | 是
 password2 | 确认密码 | 是
 
 ### 成功操作返回

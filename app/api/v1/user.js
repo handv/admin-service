@@ -96,16 +96,15 @@ router.get('/auth', new Auth(AUTH_USER).m, async (ctx) => {
 })
 
 // 获取用户列表
-// 需要管理员及以上才能操作
-router.get('/list', new Auth(AUTH_ADMIN).m, async (ctx) => {
-    // 查询用户信息
-    let [err, data] = await UserDao.list(ctx.query);
-    if (!err) {
-        ctx.response.status = 200;
-        ctx.body = res.json(data)
-    } else {
-        ctx.body = res.fail(err)
-    }
+router.get('/list', new Auth(AUTH_USER).m, async (ctx) => {
+  // 查询用户信息
+  let [err, data] = await UserDao.list(ctx.query)
+  if (!err) {
+    ctx.response.status = 200
+    ctx.body = res.json(data)
+  } else {
+    ctx.body = res.fail(err)
+  }
 })
 
 
