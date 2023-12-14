@@ -78,14 +78,11 @@ router.put('/article/:id', new Auth(AUTH_USER).m, async (ctx) => {
 })
 
 /**
- * 获取文章列表
+ * 获取分享给当前用户的信息列表
  */
-router.post('/message/list', async (ctx) => {
-  // 尝试获文章取缓存
-  const {category_id = 0, page = 1} = ctx.query
-
-  // 没有缓存，则读取数据库
-  const [err, data] = await ArticleDao.list(ctx.query)
+router.get('/message/sharelist', new Auth(AUTH_USER).m, async (ctx) => {
+  // 当前登录用户
+  const [err, data] = await MessageDao.sharelist({userid: ctx.auth.uid})
   if (!err) {
     ctx.response.status = 200
     ctx.body = res.json(data)
