@@ -30,6 +30,28 @@ class FeedbackDao {
       return [err, null]
     }
   }
+
+  // 更新反馈
+  static async update({id, name, value, userid}) {
+    const feedback = await Feedback.findByPk(id)
+    if (!feedback) {
+      throw new global.errs.NotFound('没有找到相关反馈信息')
+    }
+    if (feedback.user_id !== userid) {
+      throw new global.errs.Error('当前用户没有修改权限')
+    }
+
+    if (feedback[name]) {
+      feedback[name] = value
+      try {
+        const res = await feedback.save()
+        return [null, res]
+      } catch (err) {
+        return [err, null]
+      }
+    }
+    return [null, feedback]
+  }
 }
 
 module.exports = {
