@@ -41,12 +41,12 @@ class UserDao {
   }
 
   // 验证密码
-  static async verify(username, plainPassword) {
+  static async verify(email, plainPassword) {
     try {
       // 查询用户是否存在
       const user = await User.findOne({
         where: {
-          username,
+          email,
           status: {[Op.ne]: 0},
         },
       })
@@ -88,45 +88,6 @@ class UserDao {
       }
 
       return [null, user]
-    } catch (err) {
-      return [err, null]
-    }
-  }
-
-  // 删除用户
-  static async destroy(id) {
-    // 检测是否存在用户
-    const user = await User.findByPk(id)
-    // 不存在抛出错误
-    if (!user) {
-      throw new global.errs.NotFound('没有找到相关用户')
-    }
-
-    try {
-      // 软删除用户
-      const res = await user.destroy()
-      return [null, res]
-    } catch (err) {
-      return [err, null]
-    }
-  }
-
-  // 更新用户
-  static async update(id, v) {
-    // 查询用户
-    const user = await User.findByPk(id)
-    if (!user) {
-      throw new global.errs.NotFound('没有找到相关用户')
-    }
-
-    // 更新用户
-    user.email = v.get('body.email')
-    user.username = v.get('body.username')
-    user.status = v.get('body.status')
-
-    try {
-      const res = await user.save()
-      return [null, res]
     } catch (err) {
       return [err, null]
     }
