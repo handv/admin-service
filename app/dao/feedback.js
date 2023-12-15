@@ -1,3 +1,4 @@
+const {Op} = require('sequelize')
 const {Feedback} = require('@models/feedback')
 
 class FeedbackDao {
@@ -51,6 +52,51 @@ class FeedbackDao {
       }
     }
     return [null, feedback]
+  }
+
+  // 当前共享信息的其他用户反馈（除去当前用户）
+  static async getList(params = {}) {
+    try {
+      const {message_id, user_id, page_size = 10, page = 1} = params
+
+      if (!message_id) {
+        throw new global.errs.NotFound('必须传入message id')
+      }
+
+      const finner = {
+        deleted_at: null,
+        message_id,
+      }
+
+      if (user_id) {
+        finner.user_id = {[Op.ne]: user_id}
+      }
+
+      const feedback = await Feedback.scope('bh').findAndCountAll({
+        where: finner,
+        // 每页10条
+        limit: page_size,
+        offset: (page - 1) * page_size,
+        order: [['updated_at', 'DESC']],
+      })
+
+      let rows = feedback.rows
+      const data = {
+        data: rows,
+        // 分页
+        meta: {
+          current_page: parseInt(page),
+          per_page: 10,
+          count: feedback.count,
+          total: feedback.count,
+          total_pages: Math.ceil(feedback.count / 10),
+        },
+      }
+      return [null, data]
+    } catch (err) {
+      console.log(err)
+      return [err, null]
+    }
   }
 }
 

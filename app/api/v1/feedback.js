@@ -51,4 +51,20 @@ router.put('/feedback/:id', new Auth(AUTH_USER).m, async (ctx) => {
     ctx.body = res.fail(err)
   }
 })
+
+// 获取该分享信息下的其他用户反馈列表
+router.get('/share/feedbacklist/:id', new Auth(AUTH_USER).m, async (ctx) => {
+  // 分享信息id
+  const {id} = ctx.params
+  // 当前用户id
+  const user_id = ctx.auth.uid
+  const [err, data] = await FeedbackDao.getList({message_id: +id, user_id})
+  if (!err) {
+    // 返回结果
+    ctx.response.status = 200
+    ctx.body = res.json(data)
+  } else {
+    ctx.body = res.fail(err)
+  }
+})
 module.exports = router
