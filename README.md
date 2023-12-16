@@ -68,16 +68,16 @@ git clone https://github.com/lgb/nodejs-koa-blog.git
 
 ### 2.3.创建数据库
 
-启动项目前一定要在创建好 boblog 数据库，如果你还没安装上数据库，请点击[MySQL 下载](https://dev.mysql.com/downloads/mysql/)，请在根目录下的 |——config/config.js 文件下修改您本地的数据库名字（boblog）和数据库密码 ( password )。以下是执行数据库命令：
+启动项目前一定要在创建好 admin 数据库，如果你还没安装上数据库，请点击[MySQL 下载](https://dev.mysql.com/downloads/mysql/)，请在根目录下的 |——config/config.js 文件下修改您本地的数据库名字（admin）和数据库密码 ( password )。以下是执行数据库命令：
 
 ```
 # 登录数据库
 
 mysql -uroot -p (回车然后输入你的本机数据库密码)
 
-# 创建 boblog 数据库
+# 创建 admin 数据库
 
-CREATE DATABASE IF NOT EXISTS boblog DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
+CREATE DATABASE IF NOT EXISTS admin DEFAULT CHARACTER SET utf8mb4 COLLATE utf8mb4_unicode_ci;
 ```
 
 
@@ -108,7 +108,7 @@ Postman 下载地址：[https://www.postman.com/downloads/](https://www.postman.
 > 答：可以的，建议使用 yarn，yarn 比 npm 速度快，主要是安装版本统一。
 
 2. 启动 Koa2 项目报错，请问原因？
-> 答：首先，请检查一下使用 npm 或 yarn 安装依赖包没。然后，再请检查一下确保安装好数据库，新建好数据库：boblog，请看上面的数据库配置。最后看下启动打印日志是否有报错的信息。
+> 答：首先，请检查一下使用 npm 或 yarn 安装依赖包没。然后，再请检查一下确保安装好数据库，新建好数据库：admin，请看上面的数据库配置。最后看下启动打印日志是否有报错的信息。
 3. ... 更多问题请到 [Issues](https://github.com/lfb/nodejs-koa-blog/issues)查阅，或者有问题请到 [Issues 提问](https://github.com/lfb/nodejs-koa-blog/issues/new)。
 
 
