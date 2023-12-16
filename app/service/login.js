@@ -22,7 +22,7 @@ class LoginManager {
     // 验证账号密码是否正确
     const [err, user] = await UserDao.verify(email, password)
     if (!err) {
-      return [null, generateToken(user.id, Auth.USER), user.id]
+      return [null, generateToken(user.id, user.status), user.id]
     } else {
       return [err, null]
     }

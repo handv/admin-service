@@ -11,8 +11,6 @@ const {LoginManager} = require('@service/login')
 const {Resolve} = require('@lib/helper')
 const res = new Resolve()
 
-const AUTH_USER = 8
-
 const router = new Router({
   prefix: '/api/v1/user',
 })
@@ -69,7 +67,7 @@ router.post('/login', async (ctx) => {
 })
 
 // 获取用户信息
-router.get('/auth', new Auth(AUTH_USER).m, async (ctx) => {
+router.get('/auth', new Auth(Auth.USER).m, async (ctx) => {
   // 获取用户ID
   const id = ctx.auth.uid
 
@@ -85,7 +83,7 @@ router.get('/auth', new Auth(AUTH_USER).m, async (ctx) => {
 })
 
 // 查询非当前用户的用户列表
-router.get('/list', new Auth(AUTH_USER).m, async (ctx) => {
+router.get('/list', new Auth(Auth.USER).m, async (ctx) => {
   // ctx.auth.uid指发请求的登录用户的id
   let [err, data] = await UserDao.list(ctx.auth.uid)
   if (!err) {

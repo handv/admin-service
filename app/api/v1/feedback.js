@@ -10,14 +10,12 @@ const {Auth} = require('@middlewares/auth')
 const {Resolve} = require('@lib/helper')
 const res = new Resolve()
 
-const AUTH_USER = 8
-
 const router = new Router({
   prefix: '/api/v1',
 })
 
-// 获取评论详情(根据userid和message_id)
-router.get('/feedback/:message_id', new Auth(AUTH_USER).m, async (ctx) => {
+// 获取反馈详情(根据userid和message_id)
+router.get('/feedback/:message_id', new Auth(Auth.USER).m, async (ctx) => {
   // 通过验证器校验参数是否通过
   const v = await new PositiveArticleIdParamsValidator().validate(ctx)
 
@@ -34,7 +32,7 @@ router.get('/feedback/:message_id', new Auth(AUTH_USER).m, async (ctx) => {
 })
 
 // 修改反馈
-router.put('/feedback/:id', new Auth(AUTH_USER).m, async (ctx) => {
+router.put('/feedback/:id', new Auth(Auth.USER).m, async (ctx) => {
   // 通过验证器校验参数是否通过
   const v = await new FeedbackValidator().validate(ctx)
 
@@ -53,7 +51,7 @@ router.put('/feedback/:id', new Auth(AUTH_USER).m, async (ctx) => {
 })
 
 // 获取该分享信息下的其他用户反馈列表
-router.get('/share/feedbacklist/:id', new Auth(AUTH_USER).m, async (ctx) => {
+router.get('/share/feedbacklist/:id', new Auth(Auth.USER).m, async (ctx) => {
   // 分享信息id
   const {id} = ctx.params
   // 当前用户id
