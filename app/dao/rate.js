@@ -1,4 +1,4 @@
-const {Op} = require('sequelize')
+const {sequelize} = require('@core/db')
 const {Rate} = require('@models/rate')
 
 class RateDao {
@@ -62,6 +62,19 @@ class RateDao {
     try {
       const res = await rate.save()
       return [null, res]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
+  // 统计每个用户的得分情况
+  static async count() {
+    try {
+      const data = await sequelize.query(
+        'SELECT m.user_id, SUM(r.rate1score + r.rate2score + r.rate3score) AS score FROM message m INNER JOIN rate r ON m.id = r.message_id GROUP BY m.user_id ORDER BY m.user_id',
+        {type: sequelize.QueryTypes.SELECT}
+      )
+      return [null, data]
     } catch (err) {
       return [err, null]
     }

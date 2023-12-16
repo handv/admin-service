@@ -123,6 +123,24 @@ class MessageDao {
       return [err, null]
     }
   }
+
+  // 统计每个用户发布的信息数量
+  static async count() {
+    try {
+      const data = await Message.findAll({
+        group: ['user_id'],
+        attributes: [
+          'user_id', // 选择要分组的字段
+          [sequelize.fn('COUNT', sequelize.col('id')), 'count'], // 使用 COUNT 聚合函数统计 message 个数
+        ],
+        order: [['user_id']],
+        raw: true
+      })
+      return [null, data]
+    } catch (err) {
+      return [err, null]
+    }
+  }
 }
 
 module.exports = {

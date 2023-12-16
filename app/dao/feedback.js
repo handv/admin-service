@@ -1,5 +1,6 @@
 const {Op} = require('sequelize')
 const {Feedback} = require('@models/feedback')
+const {sequelize} = require('@core/db')
 
 class FeedbackDao {
   // 获取评论详情
@@ -95,6 +96,30 @@ class FeedbackDao {
       return [null, data]
     } catch (err) {
       console.log(err)
+      return [err, null]
+    }
+  }
+
+  // 统计每个用户反馈的信息数量
+  static async count() {
+    try {
+      const data = await Feedback.findAll({
+        where: {
+          'updated_at': {
+            [Op.ne]: sequelize.col('created_at'), // 添加筛选条件，只筛选用户编辑过的数据
+          },
+        },
+        group: ['user_id'],
+        attributes: [
+          'user_id', // 选择要分组的字段
+          [sequelize.fn('COUNT', sequelize.col('id')), 'count'], // 使用 COUNT 聚合函数统计 message 个数
+        ],
+        order: [['user_id']],
+        raw: true
+      })
+      
+      return [null, data]
+    } catch (err) {
       return [err, null]
     }
   }
