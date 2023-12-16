@@ -13,20 +13,20 @@ class UserDao {
     const {email, password, username} = params
     const hasUser = await User.findOne({
       where: {
-        email,
+        [Op.or]: [{email}, {username}],
         deleted_at: null,
       },
     })
 
     if (hasUser) {
-      throw new global.errs.Existing('用户已存在')
+      throw new global.errs.Existing('用户已存在，邮箱、用户名不可重复')
     }
 
     const user = new User()
     user.username = username
     user.email = email
     user.password = password
-
+    user.status = 8
     try {
       const res = await user.save()
       const data = {
