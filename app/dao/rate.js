@@ -44,7 +44,7 @@ class RateDao {
   }
 
   // 更新反馈
-  static async update({id, name, value, userid}) {
+  static async update({id, data = {}, userid}) {
     const rate = await Rate.findByPk(id)
     if (!rate) {
       throw new global.errs.NotFound('没有找到相关评价信息')
@@ -53,59 +53,16 @@ class RateDao {
       throw new global.errs.Error('当前用户没有修改权限')
     }
 
-    if (rate[name]) {
-      rate[name] = value
-      try {
-        const res = await rate.save()
-        return [null, res]
-      } catch (err) {
-        return [err, null]
+    for (let [key, value] of Object.entries(data)) {
+      if (key !== 'id') {
+        rate[key] = value
       }
     }
-    return [null, rate]
-  }
 
-  // 当前共享信息的其他用户反馈（除去当前用户）
-  static async getList(params = {}) {
     try {
-      const {message_id, user_id, page_size = 10, page = 1} = params
-
-      if (!message_id) {
-        throw new global.errs.NotFound('必须传入message id')
-      }
-
-      const finner = {
-        deleted_at: null,
-        message_id,
-      }
-
-      if (user_id) {
-        finner.user_id = {[Op.ne]: user_id}
-      }
-
-      const rate = await Rate.scope('bh').findAndCountAll({
-        where: finner,
-        // 每页10条
-        limit: page_size,
-        offset: (page - 1) * page_size,
-        order: [['updated_at', 'DESC']],
-      })
-
-      let rows = rate.rows
-      const data = {
-        data: rows,
-        // 分页
-        meta: {
-          current_page: parseInt(page),
-          per_page: 10,
-          count: rate.count,
-          total: rate.count,
-          total_pages: Math.ceil(rate.count / 10),
-        },
-      }
-      return [null, data]
+      const res = await rate.save()
+      return [null, res]
     } catch (err) {
-      console.log(err)
       return [err, null]
     }
   }

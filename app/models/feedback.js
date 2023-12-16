@@ -39,7 +39,7 @@ Feedback.init(
       type: DataTypes.INTEGER(10).UNSIGNED,
       allowNull: true,
       defaultValue: 0,
-      comment: '反馈用户ID,0-代表匿名回复',
+      comment: '反馈用户ID',
     },
     created_at: {
       type: DataTypes.DATE,
