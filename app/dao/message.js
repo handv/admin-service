@@ -61,7 +61,7 @@ class MessageDao {
     }
   }
 
-  // 获取分享给当前用户的信息列表
+  // 获取当前用户发布的信息列表
   static async minelist(params) {
     const {userid, page_size = 20, page = 1} = params
 
@@ -71,8 +71,38 @@ class MessageDao {
         offset: (page - 1) * page_size,
         order: [['created_at', 'DESC']],
         where: {
-          user_id: userid
+          user_id: userid,
         },
+        attributes: ['id', 'md5', 'domain', 'ip', 'user_id', 'share_users'],
+      })
+
+      const data = {
+        data: message.rows,
+        // 分页
+        meta: {
+          current_page: parseInt(page),
+          per_page: page_size,
+          count: message.count,
+          total: message.count,
+          total_pages: Math.ceil(message.count / page_size),
+        },
+      }
+
+      return [null, data]
+    } catch (err) {
+      return [err, null]
+    }
+  }
+
+  // 获取所有用户发布的信息列表（需要管理员权限）
+  static async alllist(params = {}) {
+    const {page_size = 20, page = 1} = params
+
+    try {
+      const message = await Message.scope('iv').findAndCountAll({
+        limit: page_size, //每页10条
+        offset: (page - 1) * page_size,
+        order: [['created_at', 'DESC']],
         attributes: ['id', 'md5', 'domain', 'ip', 'user_id', 'share_users'],
       })
 
