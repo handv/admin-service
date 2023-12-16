@@ -1,7 +1,6 @@
 const Router = require('koa-router')
 
 const {FeedbackDao} = require('@dao/feedback')
-const {MessageDao} = require('@dao/message')
 const {
   FeedbackValidator,
   PositiveArticleIdParamsValidator,

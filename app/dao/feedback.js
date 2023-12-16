@@ -18,7 +18,7 @@ class FeedbackDao {
           fb1: {...defaultValue},
           fb2: {...defaultValue},
           fb3: {...defaultValue},
-          massage_id: id,
+          message_id: id,
           user_id: userid,
         },
         attributes: ['id', 'fb1', 'fb2', 'fb3'],

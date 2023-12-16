@@ -19,7 +19,7 @@ class RateDao {
           rate1correct: 0,
           rate2correct: 0,
           rate3correct: 0,
-          massage_id: id,
+          message_id: id,
           user_id: userid,
         },
         attributes: [
