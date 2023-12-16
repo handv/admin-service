@@ -70,7 +70,6 @@ router.post('/login', async (ctx) => {
 router.get('/auth', new Auth(Auth.USER).m, async (ctx) => {
   // 获取用户ID
   const id = ctx.auth.uid
-
   // 查询用户信息
   let [err, data] = await UserDao.detail(id)
   if (!err) {
@@ -82,10 +81,11 @@ router.get('/auth', new Auth(Auth.USER).m, async (ctx) => {
   }
 })
 
-// 查询非当前用户的用户列表
+// 查询用户列表(excludeId，排除excludeId的用户)
 router.get('/list', new Auth(Auth.USER).m, async (ctx) => {
+  const {excludeId} = ctx.request.query
   // ctx.auth.uid指发请求的登录用户的id
-  let [err, data] = await UserDao.list(ctx.auth.uid)
+  let [err, data] = await UserDao.list(excludeId ? excludeId : undefined)
   if (!err) {
     ctx.response.status = 200
     ctx.body = res.json(data)

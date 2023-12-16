@@ -97,7 +97,7 @@ class UserDao {
   static async list(id) {
     const scop = 'bh'
     const filter = {}
-    if (id) {
+    if (id !== undefined) {
       filter.id = {[Op.ne]: id}
     }
 
@@ -105,6 +105,7 @@ class UserDao {
       const user = await User.scope(scop).findAll({
         where: filter,
         attributes: ['id', 'username'],
+        order: [['id']]
       })
       return [null, user]
     } catch (err) {
