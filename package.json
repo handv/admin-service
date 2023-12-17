@@ -4,7 +4,7 @@
   "description": "基于 Node.js Koa2 实战开发的一套完整的博客项目网站，使用 Koa2 二次开发一套适合多端的 RESTful API，同时配套完整的后台管理系统，且前端展示既有基于 ejs 服务端渲染，也有基于 Vue.js 前后端分离的 2 套前端网站。",
   "main": "app.js",
   "scripts": {
-    "build": "pm2 start ecosystem.config.js",
+    "startup": "pm2 start ecosystem.config.js",
     "stop": "pm2 stop all",
     "dev": "nodemon app.js",
     "test": "jest _tests  --forceExit --runInBand --colors"
