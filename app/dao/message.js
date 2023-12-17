@@ -1,6 +1,7 @@
 const {Message} = require('@models/message')
 const {Feedback} = require('@models/feedback')
 const {sequelize} = require('@core/db')
+const {Op} = require('sequelize')
 // 定义信息模型
 class MessageDao {
   // 发布信息
@@ -144,7 +145,7 @@ class MessageDao {
   }
 
   static async steamlist(params) {
-    const {userid, page_size = 20, page = 1} = params
+    const {userid, page_size = 20, page = 1, key} = params
 
     try {
       // 分享给当前用户的信息列表
@@ -176,6 +177,9 @@ class MessageDao {
       const feedbackDataList = await Feedback.findAll({
         where: {
           message_id: messageDataList.map((message) => message.id), // 使用上一步查询到的 messageDataList 的 id 列表
+          user_id: {
+            [Op.ne]: userid, // 添加这个条件来过滤掉 user_id 等于 userid 的数据
+          },
         },
         include: [
           {
@@ -185,19 +189,30 @@ class MessageDao {
         ],
       })
 
+      // 过滤数据
+      const filteredMessageDataList = messageDataList.filter((message) =>
+        key ? message.user_id === +key : true
+      )
+      const filteredFeedbackDataList = feedbackDataList.filter((feedback) =>
+        key
+          ? (feedback.user_id === +key || feedback.message.user_id === +key)
+          : true
+      )
+
       // 处理需要下发的数据参数
       const data = {
-        share: messageDataList.map(({id, user_id, updated_at}) => ({
+        share: filteredMessageDataList.map(({id, user_id, updated_at}) => ({
           id,
           user_id,
           updated_at,
         })),
-        feedback: feedbackDataList.map(
-          ({id, user_id, updated_at, message}) => ({
+        feedback: filteredFeedbackDataList.map(
+          ({id, user_id, updated_at, message_id, message}) => ({
             id,
             user_id,
             updated_at,
             author_id: message.user_id,
+            message_id,
           })
         ),
       }
