@@ -125,7 +125,7 @@ class MessageDao {
   }
 
   // 获取所有用户发布的信息列表
-  static async alllist(params = {}) {
+  static async allList(params = {}) {
     const {page_size = 20, page = 1} = params
 
     try {

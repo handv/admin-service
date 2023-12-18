@@ -70,7 +70,8 @@ router.get('/message/mine', new Auth(Auth.USER).m, async (ctx) => {
  * 获取所有用户发布的信息
  */
 router.get('/message/all', new Auth(Auth.ADMIN).m, async (ctx) => {
-  const [err, data] = await MessageDao.alllist({})
+  const {page = 1} = ctx.request.query
+  const [err, data] = await MessageDao.allList({page})
   if (!err) {
     ctx.response.status = 200
     ctx.body = res.json(data)

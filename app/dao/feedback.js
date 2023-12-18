@@ -75,7 +75,6 @@ class FeedbackDao {
 
       const feedback = await Feedback.scope('bh').findAndCountAll({
         where: finner,
-        // 每页10条
         limit: page_size,
         offset: (page - 1) * page_size,
         order: [['updated_at', 'DESC']],
