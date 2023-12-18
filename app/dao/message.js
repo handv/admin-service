@@ -27,22 +27,37 @@ class MessageDao {
 
   // 获取分享给当前用户的信息列表
   static async sharelist(params) {
-    const {userid, page_size = 20, page = 1} = params
+    const {userid, page_size = 20, page = 1, keyword = ''} = params
 
-    try {
-      const message = await Message.scope('iv').findAndCountAll({
-        limit: page_size, //每页10条
-        offset: (page - 1) * page_size,
-        order: [['created_at', 'DESC']],
-        where: sequelize.where(
+    let whereCondition = {
+      [Op.and]: [
+        sequelize.where(
           sequelize.fn(
             'JSON_CONTAINS',
             sequelize.col('share_users'),
             JSON.stringify(userid)
           ),
           true
-        ),
-        attributes: ['id', 'md5', 'domain', 'ip', 'user_id', 'share_users'],
+        )
+      ]
+    };
+
+    if (keyword) {
+      whereCondition[Op.and].push({
+        [Op.or]: [
+          { ip: { [Op.like]: '%' + keyword + '%' } },
+          { md5: { [Op.like]: '%' + keyword + '%' } },
+          { domain: { [Op.like]: '%' + keyword + '%' } },
+        ]
+      });
+    }
+
+    try {
+      const message = await Message.scope('msg').findAndCountAll({
+        limit: page_size, //每页10条
+        offset: (page - 1) * page_size,
+        order: [['created_at', 'DESC']],
+        where: whereCondition,
       })
 
       const data = {
@@ -136,7 +151,7 @@ class MessageDao {
           [sequelize.fn('COUNT', sequelize.col('id')), 'count'], // 使用 COUNT 聚合函数统计 message 个数
         ],
         order: [['user_id']],
-        raw: true
+        raw: true,
       })
       return [null, data]
     } catch (err) {
@@ -195,7 +210,7 @@ class MessageDao {
       )
       const filteredFeedbackDataList = feedbackDataList.filter((feedback) =>
         key
-          ? (feedback.user_id === +key || feedback.message.user_id === +key)
+          ? feedback.user_id === +key || feedback.message.user_id === +key
           : true
       )
 

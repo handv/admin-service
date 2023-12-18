@@ -5,7 +5,7 @@ const {Feedback} = require('./feedback')
 // 定义模型
 class Message extends Model {}
 
-// 初始文章模型
+// 初始信息模型
 Message.init(
   {
     id: {

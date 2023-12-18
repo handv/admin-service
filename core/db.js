@@ -28,16 +28,27 @@ const sequelize = new Sequelize(dbName, user, password, {
     scopes: {
       bh: {
         attributes: {
-          exclude: ['password', 'updated_at', 'deleted_at', 'created_at']
-        }
+          exclude: ['password', 'updated_at', 'deleted_at', 'created_at'],
+        },
       },
       iv: {
         attributes: {
-          exclude: ['content', 'password', 'updated_at', 'deleted_at']
-        }
-      }
-    }
-  }
+          exclude: ['content', 'password', 'updated_at', 'deleted_at'],
+        },
+      },
+      msg: {
+        attributes: {
+          exclude: [
+            'created_at',
+            'deleted_at',
+            'status',
+            'labels',
+            'share_users',
+          ],
+        },
+      },
+    },
+  },
 })
 
 // 创建模型

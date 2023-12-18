@@ -36,8 +36,10 @@ router.post('/message', new Auth(Auth.USER).m, async (ctx) => {
  * 获取分享给当前用户的信息列表
  */
 router.get('/message/sharelist', new Auth(Auth.USER).m, async (ctx) => {
+  // 查询关键字
+  const {keyword = ''} = ctx.request.query
   // 当前登录用户
-  const [err, data] = await MessageDao.sharelist({userid: ctx.auth.uid})
+  const [err, data] = await MessageDao.sharelist({userid: ctx.auth.uid, keyword})
   if (!err) {
     ctx.response.status = 200
     ctx.body = res.json(data)
