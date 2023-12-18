@@ -39,32 +39,36 @@ class MessageDao {
   static async sharelist(params) {
     const {userid, page_size = 20, page = 1, keyword = ''} = params
 
-    let whereCondition = {
-      [Op.and]: [
-        sequelize.where(
-          sequelize.fn(
-            'JSON_CONTAINS',
-            sequelize.col('share_users'),
-            JSON.stringify(userid)
-          ),
-          true
-        ),
-      ],
-    }
+    try {
+      // 从 message_share 表中获取 message_id
+      const messageShare = await MessageShare.findAll({
+        where: {
+          share_user_id: userid
+        },
+        attributes: ['message_id']
+      })
 
-    if (keyword) {
-      whereCondition[Op.and].push({
-        [Op.or]: [
+      // 提取 message_id 列表
+      const messageIds = messageShare.map(item => item.message_id)
+
+      // 构建查询条件
+      let whereCondition = {
+        id: {
+          [Op.in]: messageIds
+        }
+      }
+
+      if (keyword) {
+        whereCondition[Op.or] = [
           {ip: {[Op.like]: '%' + keyword + '%'}},
           {md5: {[Op.like]: '%' + keyword + '%'}},
           {domain: {[Op.like]: '%' + keyword + '%'}},
-        ],
-      })
-    }
+        ]
+      }
 
-    try {
+      // 在 Message 表中查询
       const message = await Message.scope('msg').findAndCountAll({
-        limit: page_size, //每页10条
+        limit: page_size,
         offset: (page - 1) * page_size,
         order: [['created_at', 'DESC']],
         where: whereCondition,
@@ -72,7 +76,6 @@ class MessageDao {
 
       const data = {
         data: message.rows,
-        // 分页
         meta: {
           current_page: parseInt(page),
           per_page: page_size,
