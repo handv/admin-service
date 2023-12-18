@@ -1,5 +1,6 @@
 const {Message} = require('@models/message')
 const {Feedback} = require('@models/feedback')
+const {MessageShare} = require('@models/message_share')
 const {sequelize} = require('@core/db')
 const {Op} = require('sequelize')
 // 定义信息模型
@@ -18,6 +19,15 @@ class MessageDao {
 
     try {
       const res = await message.save()
+
+      // 创建 MessageShare 记录
+      const shareUsers = JSON.parse(v.get('body.share_users')) || []
+      const messageShares = shareUsers.map((shareUser) => ({
+        message_id: res.id,
+        share_user_id: shareUser,
+      }))
+
+      await MessageShare.bulkCreate(messageShares)
       return [null, res]
     } catch (err) {
       console.log(err)
@@ -38,18 +48,18 @@ class MessageDao {
             JSON.stringify(userid)
           ),
           true
-        )
-      ]
-    };
+        ),
+      ],
+    }
 
     if (keyword) {
       whereCondition[Op.and].push({
         [Op.or]: [
-          { ip: { [Op.like]: '%' + keyword + '%' } },
-          { md5: { [Op.like]: '%' + keyword + '%' } },
-          { domain: { [Op.like]: '%' + keyword + '%' } },
-        ]
-      });
+          {ip: {[Op.like]: '%' + keyword + '%'}},
+          {md5: {[Op.like]: '%' + keyword + '%'}},
+          {domain: {[Op.like]: '%' + keyword + '%'}},
+        ],
+      })
     }
 
     try {
@@ -111,7 +121,7 @@ class MessageDao {
     }
   }
 
-  // 获取所有用户发布的信息列表（需要管理员权限）
+  // 获取所有用户发布的信息列表
   static async alllist(params = {}) {
     const {page_size = 20, page = 1} = params
 
@@ -159,78 +169,74 @@ class MessageDao {
     }
   }
 
-  static async steamlist(params) {
+  static async feedbacklist(params) {
     const {userid, page_size = 20, page = 1, key} = params
 
     try {
       // 分享给当前用户的信息列表
-      const messageDataList = await Message.scope('iv').findAll({
-        limit: page_size, //每页10条
+      const message = await MessageShare.findAndCountAll({
+        limit: page_size,
         offset: (page - 1) * page_size,
         order: [['created_at', 'DESC']],
-        where: sequelize.where(
-          sequelize.fn(
-            'JSON_CONTAINS',
-            sequelize.col('share_users'),
-            JSON.stringify(userid)
-          ),
-          true
-        ),
-        attributes: [
-          'id',
-          'md5',
-          'domain',
-          'ip',
-          'user_id',
-          'share_users',
-          'updated_at',
-        ],
-        raw: true,
-      })
-
-      // 查询具有特定 message_id 并包含 user_id 的 Feedback 数据
-      const feedbackDataList = await Feedback.findAll({
         where: {
-          message_id: messageDataList.map((message) => message.id), // 使用上一步查询到的 messageDataList 的 id 列表
-          user_id: {
-            [Op.ne]: userid, // 添加这个条件来过滤掉 user_id 等于 userid 的数据
-          },
+          share_user_id: userid,
         },
-        include: [
-          {
-            model: Message, // 包含 Message 模型
-            attributes: ['user_id'], // 仅包含 user_id 字段
-          },
-        ],
       })
 
-      // 过滤数据
-      const filteredMessageDataList = messageDataList.filter((message) =>
-        key ? message.user_id === +key : true
-      )
-      const filteredFeedbackDataList = feedbackDataList.filter((feedback) =>
-        key
-          ? feedback.user_id === +key || feedback.message.user_id === +key
-          : true
-      )
-
-      // 处理需要下发的数据参数
       const data = {
-        share: filteredMessageDataList.map(({id, user_id, updated_at}) => ({
-          id,
-          user_id,
-          updated_at,
-        })),
-        feedback: filteredFeedbackDataList.map(
-          ({id, user_id, updated_at, message_id, message}) => ({
-            id,
-            user_id,
-            updated_at,
-            author_id: message.user_id,
-            message_id,
-          })
-        ),
+        data: message.rows,
+        // 分页
+        meta: {
+          current_page: parseInt(page),
+          per_page: page_size,
+          count: message.count,
+          total: message.count,
+          total_pages: Math.ceil(message.count / page_size),
+        },
       }
+      // // 查询具有特定 message_id 并包含 user_id 的 Feedback 数据
+      // const feedbackDataList = await Feedback.findAll({
+      //   where: {
+      //     message_id: messageDataList.map((message) => message.id), // 使用上一步查询到的 messageDataList 的 id 列表
+      //     user_id: {
+      //       [Op.ne]: userid, // 添加这个条件来过滤掉 user_id 等于 userid 的数据
+      //     },
+      //   },
+      //   include: [
+      //     {
+      //       model: Message, // 包含 Message 模型
+      //       attributes: ['user_id'], // 仅包含 user_id 字段
+      //     },
+      //   ],
+      // })
+
+      // // 过滤数据
+      // const filteredMessageDataList = messageDataList.filter((message) =>
+      //   key ? message.user_id === +key : true
+      // )
+      // const filteredFeedbackDataList = feedbackDataList.filter((feedback) =>
+      //   key
+      //     ? feedback.user_id === +key || feedback.message.user_id === +key
+      //     : true
+      // )
+
+      // // 处理需要下发的数据参数
+      // const data = {
+      //   share: filteredMessageDataList.map(({id, user_id, updated_at}) => ({
+      //     id,
+      //     user_id,
+      //     updated_at,
+      //   })),
+      //   feedback: filteredFeedbackDataList.map(
+      //     ({id, user_id, updated_at, message_id, message}) => ({
+      //       id,
+      //       user_id,
+      //       updated_at,
+      //       author_id: message.user_id,
+      //       message_id,
+      //     })
+      //   ),
+      // }
 
       return [null, data]
     } catch (err) {

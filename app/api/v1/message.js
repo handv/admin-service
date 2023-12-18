@@ -74,12 +74,12 @@ router.get('/message/all', new Auth(Auth.ADMIN).m, async (ctx) => {
     ctx.body = res.fail(err)
   }
 })
-// 获取分享给当前用户的信息，以及这些分享信息下的其他用户反馈列表
-router.get('/steam/mine', new Auth(Auth.USER).m, async (ctx) => {
+// 获取分享给当前用户的信息下的其他用户反馈列表
+router.get('/message/feedbacklist', new Auth(Auth.USER).m, async (ctx) => {
   // 查询关键字
   const {key = ''} = ctx.request.query
   // 分享给当前用户的信息流
-  let [err, data] = await MessageDao.steamlist({userid: ctx.auth.uid, key})
+  let [err, data] = await MessageDao.feedbacklist({userid: ctx.auth.uid, key})
   if (!err) {
     // 返回结果
     ctx.response.status = 200
