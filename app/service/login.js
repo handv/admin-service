@@ -1,6 +1,5 @@
 const {UserDao} = require('@dao/user')
 const {generateToken} = require('@core/util')
-const {Auth} = require('@middlewares/auth')
 
 class LoginManager {
   // 用户登录

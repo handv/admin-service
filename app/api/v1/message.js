@@ -37,9 +37,9 @@ router.post('/message', new Auth(Auth.USER).m, async (ctx) => {
  */
 router.get('/message/sharelist', new Auth(Auth.USER).m, async (ctx) => {
   // 查询关键字
-  const {keyword = ''} = ctx.request.query
+  const {keyword = '', page = 1} = ctx.request.query
   // 当前登录用户
-  const [err, data] = await MessageDao.sharelist({userid: ctx.auth.uid, keyword})
+  const [err, data] = await MessageDao.sharelist({userid: ctx.auth.uid, keyword, page})
   if (!err) {
     ctx.response.status = 200
     ctx.body = res.json(data)
