@@ -39,7 +39,11 @@ router.get('/message/sharelist', new Auth(Auth.USER).m, async (ctx) => {
   // 查询关键字
   const {keyword = '', page = 1} = ctx.request.query
   // 当前登录用户
-  const [err, data] = await MessageDao.sharelist({userid: ctx.auth.uid, keyword, page})
+  const [err, data] = await MessageDao.sharelist({
+    userid: ctx.auth.uid,
+    keyword,
+    page,
+  })
   if (!err) {
     ctx.response.status = 200
     ctx.body = res.json(data)
@@ -77,9 +81,12 @@ router.get('/message/all', new Auth(Auth.ADMIN).m, async (ctx) => {
 // 获取分享给当前用户的信息下的其他用户反馈列表
 router.get('/message/feedbacklist', new Auth(Auth.USER).m, async (ctx) => {
   // 查询关键字
-  const {key = ''} = ctx.request.query
+  const {keyword = ''} = ctx.request.query
   // 分享给当前用户的信息流
-  let [err, data] = await MessageDao.feedbacklist({userid: ctx.auth.uid, key})
+  let [err, data] = await MessageDao.feedbacklist({
+    userid: ctx.auth.uid,
+    keyword,
+  })
   if (!err) {
     // 返回结果
     ctx.response.status = 200

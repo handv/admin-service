@@ -47,6 +47,17 @@ const sequelize = new Sequelize(dbName, user, password, {
           ],
         },
       },
+      fb: {
+        attributes: {
+          exclude: [
+            'created_at',
+            'deleted_at',
+            'fb1',
+            'fb2',
+            'fb3',
+          ],
+        },
+      },
     },
   },
 })

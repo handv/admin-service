@@ -43,19 +43,19 @@ class MessageDao {
       // 从 message_share 表中获取 message_id
       const messageShare = await MessageShare.findAll({
         where: {
-          share_user_id: userid
+          share_user_id: userid,
         },
-        attributes: ['message_id']
+        attributes: ['message_id'],
       })
 
       // 提取 message_id 列表
-      const messageIds = messageShare.map(item => item.message_id)
+      const messageIds = messageShare.map((item) => item.message_id)
 
       // 构建查询条件
       let whereCondition = {
         id: {
-          [Op.in]: messageIds
-        }
+          [Op.in]: messageIds,
+        },
       }
 
       if (keyword) {
@@ -173,73 +173,54 @@ class MessageDao {
   }
 
   static async feedbacklist(params) {
-    const {userid, page_size = 20, page = 1, key} = params
+    const {userid, page_size = 20, page = 1, keyword = ''} = params
 
     try {
-      // 分享给当前用户的信息列表
-      const message = await MessageShare.findAndCountAll({
+      // 获取分享了的 message_id
+      const sharedMessages = await MessageShare.findAll({
+        where: {share_user_id: userid},
+        attributes: ['message_id'],
+      })
+
+      // 提取 message_id 列表
+      const messageIds = sharedMessages.map((msg) => msg.message_id)
+
+      // 构建查询条件
+      const whereCondition = {}
+
+      if (keyword) {
+        whereCondition[Op.or] = [
+          {ip: {[Op.like]: `%${keyword}%`}},
+          {domain: {[Op.like]: `%${keyword}%`}},
+          {md5: {[Op.like]: `%${keyword}%`}},
+        ]
+      }
+
+      // 查询满足条件的 feedback
+      const feedback = await Feedback.scope('fb').findAndCountAll({
+        where: {message_id: {[Op.in]: messageIds}},
+        include: [
+          {
+            model: Message,
+            where: whereCondition,
+            attributes: ['user_id', 'title'],
+          },
+        ],
         limit: page_size,
         offset: (page - 1) * page_size,
-        order: [['created_at', 'DESC']],
-        where: {
-          share_user_id: userid,
-        },
+        order: [['updated_at', 'DESC']],
       })
 
       const data = {
-        data: message.rows,
-        // 分页
+        data: feedback.rows,
         meta: {
           current_page: parseInt(page),
           per_page: page_size,
-          count: message.count,
-          total: message.count,
-          total_pages: Math.ceil(message.count / page_size),
+          count: feedback.count,
+          total: feedback.count,
+          total_pages: Math.ceil(feedback.count / page_size),
         },
       }
-      // // 查询具有特定 message_id 并包含 user_id 的 Feedback 数据
-      // const feedbackDataList = await Feedback.findAll({
-      //   where: {
-      //     message_id: messageDataList.map((message) => message.id), // 使用上一步查询到的 messageDataList 的 id 列表
-      //     user_id: {
-      //       [Op.ne]: userid, // 添加这个条件来过滤掉 user_id 等于 userid 的数据
-      //     },
-      //   },
-      //   include: [
-      //     {
-      //       model: Message, // 包含 Message 模型
-      //       attributes: ['user_id'], // 仅包含 user_id 字段
-      //     },
-      //   ],
-      // })
-
-      // // 过滤数据
-      // const filteredMessageDataList = messageDataList.filter((message) =>
-      //   key ? message.user_id === +key : true
-      // )
-      // const filteredFeedbackDataList = feedbackDataList.filter((feedback) =>
-      //   key
-      //     ? feedback.user_id === +key || feedback.message.user_id === +key
-      //     : true
-      // )
-
-      // // 处理需要下发的数据参数
-      // const data = {
-      //   share: filteredMessageDataList.map(({id, user_id, updated_at}) => ({
-      //     id,
-      //     user_id,
-      //     updated_at,
-      //   })),
-      //   feedback: filteredFeedbackDataList.map(
-      //     ({id, user_id, updated_at, message_id, message}) => ({
-      //       id,
-      //       user_id,
-      //       updated_at,
-      //       author_id: message.user_id,
-      //       message_id,
-      //     })
-      //   ),
-      // }
 
       return [null, data]
     } catch (err) {
