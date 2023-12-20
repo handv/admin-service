@@ -15,41 +15,32 @@ Rate.init(
       autoIncrement: true,
       comment: '评价主键ID',
     },
-    rate1score: {
-      type: DataTypes.INTEGER(10).UNSIGNED,
+    ip: {
+      type: DataTypes.JSON,
       allowNull: false,
-      defaultValue: 0,
-      comment: '评价ip分数',
+      defaultValue: {
+        score: 0,
+        correct: 0
+      },
+      comment: 'ip评价',
     },
-    rate2score: {
-      type: DataTypes.INTEGER(10).UNSIGNED,
+    domain: {
+      type: DataTypes.JSON,
       allowNull: false,
-      defaultValue: 0,
-      comment: '评价domain分数',
+      defaultValue: {
+        score: 0,
+        correct: 0
+      },
+      comment: 'domain评价',
     },
-    rate3score: {
-      type: DataTypes.INTEGER(10).UNSIGNED,
+    md5: {
+      type: DataTypes.JSON,
       allowNull: false,
-      defaultValue: 0,
-      comment: '评价md5分数',
-    },
-    rate1correct: {
-      type: DataTypes.INTEGER(10).UNSIGNED,
-      allowNull: false,
-      defaultValue: 0,
-      comment: '评价ip准确情况',
-    },
-    rate2correct: {
-      type: DataTypes.INTEGER(10).UNSIGNED,
-      allowNull: false,
-      defaultValue: 0,
-      comment: '评价domain准确情况',
-    },
-    rate3correct: {
-      type: DataTypes.INTEGER(10).UNSIGNED,
-      allowNull: false,
-      defaultValue: 0,
-      comment: '评价md5准确情况',
+      defaultValue: {
+        score: 0,
+        correct: 0
+      },
+      comment: 'md5评价',
     },
     message_id: {
       type: DataTypes.INTEGER(10).UNSIGNED,

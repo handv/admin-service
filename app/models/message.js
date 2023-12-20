@@ -2,6 +2,7 @@ const moment = require('moment')
 const {sequelize} = require('@core/db')
 const {Model, DataTypes} = require('sequelize')
 const {Feedback} = require('./feedback')
+const {Rate} = require('./rate')
 // 定义模型
 class Message extends Model {}
 
@@ -76,6 +77,8 @@ Message.init(
 // 定义 message 和 feedback 之间的关联关系
 Message.hasMany(Feedback, {foreignKey: 'message_id'})
 Feedback.belongsTo(Message, {foreignKey: 'message_id'})
+Message.hasMany(Rate, {foreignKey: 'message_id'})
+Rate.belongsTo(Message, {foreignKey: 'message_id'})
 
 module.exports = {
   Message,

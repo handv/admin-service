@@ -1,6 +1,6 @@
 const {sequelize} = require('@core/db')
 const {Rate} = require('@models/rate')
-
+const {Message} = require('@models/message')
 class RateDao {
   // 获取评论详情
   static async detail({id, userid} = {}) {
@@ -13,24 +13,22 @@ class RateDao {
           deleted_at: null,
         },
         defaults: {
-          rate1score: 0,
-          rate2score: 0,
-          rate3score: 0,
-          rate1correct: 0,
-          rate2correct: 0,
-          rate3correct: 0,
+          ip: {
+            score: 0,
+            correct: 0,
+          },
+          domain: {
+            score: 0,
+            correct: 0,
+          },
+          md5: {
+            score: 0,
+            correct: 0,
+          },
           message_id: id,
           user_id: userid,
         },
-        attributes: [
-          'id',
-          'rate1score',
-          'rate2score',
-          'rate3score',
-          'rate1correct',
-          'rate2correct',
-          'rate3correct',
-        ],
+        attributes: ['id', 'ip', 'domain', 'md5'],
         raw: true, // 仅返回指定的字段
       })
       if (!rate) {
@@ -71,7 +69,7 @@ class RateDao {
   static async count() {
     try {
       const data = await sequelize.query(
-        'SELECT m.user_id, SUM(r.rate1score + r.rate2score + r.rate3score) AS score FROM message m INNER JOIN rate r ON m.id = r.message_id GROUP BY m.user_id ORDER BY m.user_id',
+        "SELECT m.user_id, SUM(JSON_EXTRACT(r.ip, '$.score') + JSON_EXTRACT(r.domain, '$.score') + JSON_EXTRACT(r.md5, '$.score')) AS score FROM message m INNER JOIN rate r ON m.id = r.message_id GROUP BY m.user_id ORDER BY m.user_id",
         {type: sequelize.QueryTypes.SELECT}
       )
       return [null, data]
